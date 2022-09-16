@@ -1,153 +1,123 @@
-# Containerized Python API Template repository
+# Project
 
-Learn how to create a container and package it with GitHub Actions. This repository template gives you a good starting point for a Dockerfile, GitHub Actions workflow, and Python code.
+Here's a GitHub repository containing the following:
 
+- A Python API built in [Fastapi](https://fastapi.tiangolo.com/) framework.
+- A machine learning model using [HuggingFace](https://huggingface.co/).
 
-## Learn objectives
+It's also ready to be used with [Codespaces](https://github.com/features/codespaces) a developer environment running in the cloud.
 
-* Containerize a Python application that uses FastAPI
-* Use automation to deploy it to the cloud
-* Setup GitHub Action to authenticate to Azure
-* Automatically push new changes
-* Debug cloud deployment 
+## For students
 
+Thanks to Codespaces, you can work on your projects without having Visual Studio Code installed. You can install extensions, and use a terminal. You can also configure your developer container so it runs a specific runtime or boots up with your favorite extensions.
 
-## Deploy your API to the Azure Cloud
+## What's in it
 
-This deployment can be done at no cost, using free resources with an Azure subscription. Use one of these to deploy it:
+- `/webapp` in this directory is your API, built in the Fastapi framework.
 
-- [Sign in to your account]()
-- [Create a (no Credit Card required) Azure For Students account]()
-- [Create a new Azure account]()
+## -1- Run it
 
+To run what's in this repo, you need to first start a Codespaces instance.
 
-## Create an Azure App Service
+1. Navigate to the main page of the newly created repository.
+1. Under the repository name, use the Code drop-down menu, and in the Codespaces tab, select "Create codespace on main".
+   ![Create codespace](https://docs.github.com/assets/cb-138303/images/help/codespaces/new-codespace-button.png)
+1. Creating codespace
 
-1. Open an [Azure Cloud Shell](https://shell.azure.com/?WT.mc_id=academic-0000-alfredodeza) to use the `az` cli
-1. Create a *Resource Group*:
-```
-az group create --name demo-fastapi --location "East US"
-```
-1. Create the **FREE** App Service Plan:
-```
-az appservice plan create --name "demo-fastapi" --resource-group demo-fastapi --is-linux --sku FREE
-```
-1. Create a random identifier for a unique webapp name:
-```
-let "randomIdentifier=$RANDOM*$RANDOM"
-```
-1. Create the web app with a placeholder container using the `randomIdentifier` from before
-```
-az webapp create --name "demo-fastapi-$randomIdentifier" --resource-group demo-fastapi --plan demo-fastapi --deployment-container-image mcr.microsoft.com/appsvc/staticsite:latest
-```
-1. Head to the [App Service](https://portal.azure.com/#view/HubsExtension/BrowseResource/resourceType/Microsoft.Web%2Fsites) and confirm that your service is up and running
+   ![Creating codespace](https://github.com/microsoft/codespaces-teaching-template-py/raw/main/images/Codespace_build.png)
 
+Next, we will run our app.
 
-## Create a Deployment profile
+## -2- Inspect your codespaces environment
 
-Run the following command with the `az` cli:
+What you have at this point is a pre-configured environment where all the runtimes and libraries you need are already installed - a 0 config experience.
 
-```
-az webapp deployment list-publishing-profiles --resource-group demo-fastapi --name demo-fastapi-$randomIdentifier --xml
-```
+> This environment will run the same regardless of whether your students are on Windows, macOS or Linux.
 
-Capture the output and add it as a [repository secret](/../../settings/secrets/actions/new) with the name `AZURE_WEBAPP_PUBLISH_PROFILE`
+## -3- Run API
 
+1. Run `pip install`, to install the needed dependencies
 
-## Create an Azure Service Principal
+    ```console
+    pip install -r requirements.txt
+    ```
 
-You'll need the following:
+1. Run `uvicorn` in the console, it will start up your API:
 
-1. An Azure subscription ID [find it here](https://portal.azure.com/#view/Microsoft_Azure_Billing/SubscriptionsBlade) or [follow this guide](https://docs.microsoft.com/en-us/azure/azure-portal/get-subscription-tenant-id)
-1. A Service Principal with the following details the AppID, password, and tenant information. Create one with: `az ad sp create-for-rbac -n "REST API Service Principal"` and assign the IAM role for the subscription. Alternatively set the proper role access using the following command (use a real subscription id and replace it):
+    ```console
+    uvicorn main:app --reload
+    ```
 
-```
-az ad sp create-for-rbac --name "CICD" --role contributor --scopes /subscriptions/$AZURE_SUBSCRIPTION_ID --sdk-auth
-``` 
+    You should see outpput similar to:
 
-Capture the output and add it as a [repository secret](/../../settings/secrets/actions/new) with the name `AZURE_CREDENTIALS`
+    ```output
+    INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+    INFO:     Started reloader process [28720]
+    INFO:     Started server process [28722]
+    INFO:     Waiting for application startup.
+    INFO:     Application startup complete.
+    ```
 
-## Generate a PAT
+## Challenges
 
-The access token will need to be added as an Action secret. [Create one](https://github.com/settings/tokens/new?description=Azure+Container+Apps+access&scopes=write:packages) with enough permissions to write to packages. If you follow the link, it should have everything pre-selected.
+You can change your environment. Let us take you through two different challenges that you are likely to want to do.
 
-Capture the output and add it as a [repository secret](/../../settings/secrets/actions/new) with the name `PAT`
+### -1- Change Python runtime
 
-## Update workflow file
+Let's say you want to change what version of Python is installed. This is something you can control.
 
-Now that you have everything created, you need to update the [.github/workflows/main.yml](/../../edit/main/.github/workflows/main.yml) file and add:
+Open *.devcontainer/devcontainer.json* and replace the following section:
 
-- `AZURE_WEBAPP_NAME`
-- `AZURE_GROUP_NAME`
-
-## Test locally
-
-Make sure that everything runs locally. This repository is Codespaces-enabled that has already installed the `requirements.txt` file for you. To run the application, go to the `webapp/` directory and run:
-
-```
-uvicorn --host 0.0.0.0 main:app
+```json
+"VARIANT": "3.8-bullseye"
 ```
 
-You should see output like:
+with the following instruction:
 
-```
-INFO:     Started server process [5579]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+```json
+"VARIANT": "3.9-bullseye"
 ```
 
-The site will be available at the host's port 8000. Try out the API by going to `/docs`. 
+this change will use Python 3.9 instead of 3.8.
 
-If in a Codespace, you will get a notification in VSCode that the site is available. Otherwise look at the ports available for the application and click on port `8000`
+### -2- Add extension
 
-## Deploy
+Your environment comes with preinstalled extensions. You can change which extensions your codespaces environment starts with, here's how:
 
-Before continuing, check the following:
+1. Open file *.devcontainer/devcontainer.json* and locate the following JSON element **extensions**:
 
-1. You have a PAT (Personal Access Token) saved as a [repository secret](/../../settings/secrets/)
-1. You've created an Azure Service Principal and saved it as a [repository secret](/../../settings/secrets/) as `AZURE_CREDENTIALS`
-1. You've saved the XML for the publish profile and saved it as a [repository secret](/../../settings/secrets/) as `AZURE_WEBAPP_PUBLISH_PROFILE`
-1. You've created an [App Service](https://portal.azure.com/#view/HubsExtension/BrowseResource/resourceType/Microsoft.Web%2Fsites) with a valid name and the site is already available with the default static content
+   ```json
+   "extensions": [
+    "ms-python.python",
+    "ms-python.vscode-pylance"
+   ]
+   ```
 
-To deploy:
+1. Add the following entry to **the extensions** list and add a comma on the previous extension:
 
-1. Go to [repository actions](/../../actions/workflows/main.yml) and click on _Run workflow_ and then the green button to run it.
+   ```json
+   "codespaces-Contrib.codeswing"
+   ```
+  
+   What you did above was to add the unique identifier of an extension of the [CodeSwing extension](https://marketplace.visualstudio.com/items?itemName=codespaces-Contrib.codeswing). This will let Codespaces know that this extension should be pre-installed upon startup.
 
-**Deploying can take a couple of minutes**. Make sure you tail the logs in the Azure cloud shell to check the progress:
+   Remainder: When you change any configuration on the json, a box will appear after saving.
 
-```
-az webapp log tail --name $AZURE_WEBAPP_NAME --resource-group $AZURE_RESOURCE_GROUP
-```
+   ![Reacreating codespace](https://github.com/microsoft/codespaces-teaching-template-py/raw/main/images/Codespace_rebuild.png)
 
-## Destroy resources when complete
+   Click on rebuild. Wait for your codespace to rebuild the VS Code environment.
 
-After deploying, make sure you cleanup your resources by destroying the resource group. You can do it by re-using the group name you created initially (`demo-fastapi` in the examples):
+To find the unique identifier of an extension:
 
-```
-az group delete --name demo-fastapi
-```
+- Navigate to the extension's web page, like so <https://marketplace.visualstudio.com/items?itemName=codespaces-Contrib.codeswing>
+- Locate the *Unique Identifier* field under **More info** section on your right side.
 
-## Recommendations
+## How to deploy
 
-When deploying, you might encounter errors or problems, either on the autonatiom part of it (GitHub Actions) or on the deployment destination (Azure WebApps). Here are a list of things to check for, and some suggestions on how to ensure that the deployment is correct.
+TBD
 
-* Not having enough RAM per container
-* Not using authentication for accessing the remote registry (ghcr.io in this case). Authentication is always required
-* Not using a PAT (Personal Access Token) or using a PAT that doesn't have write permissions for "packages".
-* Different port than 8000 in the container. By default Azure Container Apps use 80 and the automation updates a config option to map it to 8000.
+## Resources
 
-If running into trouble, check logs in the portal or use the following with the Azure CLI:
-
-```
-az webapp log tail --name $AZURE_WEBAPP_NAME --resource-group $AZURE_RESOURCE_GROUP
-```
-
-Update both variables to match your environment
-
-## Resources 
-
-Use the following links to useful and relevant resources that can help you deploy this API
-
-- [Deploying containers to Azure](https://learning.oreilly.com/videos/deploying-containers-to/50135VIDEOPAIML/)
-- [Azure in GitHub Actions](https://learning.oreilly.com/videos/azure-in-github/50140VIDEOPAIML/)
+- [Fastapi](https://fastapi.tiangolo.com/)
+- [HuggingFace](https://huggingface.co/)
+- [Codespaces](https://github.com/features/codespaces)
